@@ -1,0 +1,40 @@
+{
+  "name": "obsync",
+  "version": "0.1.0",
+  "description": "Sync markdown documentation from multiple project folders into an Obsidian vault",
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "obsync": "./dist/cli/index.js"
+  },
+  "main": "./dist/cli/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@clack/prompts": "^1.5.1",
+    "chokidar": "3.6.0",
+    "commander": "12.1.0",
+    "dotenv": "17.4.2",
+    "gray-matter": "4.0.3",
+    "openai": "^6.42.0",
+    "yaml": "2.9.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "25.9.2",
+    "@vitest/coverage-v8": "2.1.9",
+    "tsup": "8.5.1",
+    "typescript": "6.0.3",
+    "vitest": "2.1.9"
+  }
+}

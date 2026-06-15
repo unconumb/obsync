@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capability for the obsync menu bar widget. The WebView frontend only invokes the app's own gated commands (sync_now, open_dashboard, get_service_status) — it is NOT granted shell:allow-execute or shell:allow-spawn, since those would let the frontend directly invoke the shell plugin's spawn/execute APIs with arbitrary programs (T-10-08). Rust-side `ShellExt::shell()` calls inside sync_now/cold_start_snapshot/resolve_obsync_path use the shell plugin's Rust API directly and are not subject to (or in need of) this capability's scope. opener:allow-open-path is granted for open_dashboard, which the frontend invokes indirectly via our own #[tauri::command] (open_path itself runs in Rust, not the frontend).",
+  "windows": ["*"],
+  "permissions": ["core:default", "opener:allow-open-path"]
+}

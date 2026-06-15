@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm run build
+
+      - run: npm test
+
+  packaging-smoke:
+    name: packaging-smoke (${{ matrix.os }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm pack
+
+      # Global install of the packed tarball — exercises the real `bin` entry
+      # point, not `dist/cli/index.js` directly.
+      - name: Install tarball globally
+        shell: bash
+        run: npm install -g obsync-*.tgz
+
+      - run: obsync --version
+
+      - name: obsync init (temp dir)
+        shell: bash
+        run: |
+          mkdir -p /tmp/obsync-smoke && cd /tmp/obsync-smoke
+          obsync init
+
+      # darwin/linux only — D-06: Windows has no service backend
+      - name: service status (darwin/linux)
+        if: runner.os != 'Windows'
+        shell: bash
+        working-directory: /tmp/obsync-smoke
+        run: obsync service status
+
+      - name: install-service (darwin/linux)
+        if: runner.os != 'Windows'
+        shell: bash
+        working-directory: /tmp/obsync-smoke
+        run: obsync install-service
+
+      # Cleanup — D-10 discretion: always uninstall, even on failure, to avoid
+      # leaving systemd user units / launchd agents registered on shared runners
+      - name: uninstall-service (darwin/linux, cleanup)
+        if: always() && runner.os != 'Windows'
+        shell: bash
+        working-directory: /tmp/obsync-smoke
+        run: obsync uninstall-service || true

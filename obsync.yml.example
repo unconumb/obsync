@@ -1,0 +1,69 @@
+# obsync.yml.example — annotated reference configuration
+#
+# For a minimal starter config, run `obsync init` instead — it writes a
+# trimmed-down obsync.yml (with 600 permissions) ready to edit. This file
+# is a fuller reference showing every supported field, for when you're
+# adding more sources or tuning AI/ignore behavior.
+#
+# SECURITY: Never store API keys or tokens in this file.
+# Load secrets via environment variables or a .env file instead.
+# obsync will refuse to start if it detects hardcoded key patterns here.
+
+vault:
+  # Absolute path (or ~ for home) to your Obsidian vault root directory.
+  path: ~/Documents/Obsidian/MyVault
+
+# Optional AI backend configuration.
+# Remove this block (or set backend: none) to disable AI summarization entirely.
+ai:
+  backend: ollama        # ollama | claude | openai | none
+  model: qwen3.5:9b      # model name passed to the backend
+  #                      #   - ollama: e.g. qwen3.5:9b (small/fast/cheap example)
+  #                      #   - claude: e.g. claude-haiku-4-5 (requires ANTHROPIC_API_KEY env var)
+  #                      #   - openai: e.g. gpt-4o-mini (requires OPENAI_API_KEY env var)
+  ollama_url: http://localhost:11434   # only used when backend: ollama
+
+sources:
+  # "scattered" scan: every .md file anywhere in the source tree (minus
+  # ignore patterns) is synced. Good for note dumps / runbook folders.
+  - name: thornode
+    path: ~/thornode
+    category: Infrastructure
+    scan: scattered
+    ai_summary: false
+    ignore:
+      - "*.log"
+      - vendor/
+
+  # "docs" scan: only files under docs_path (relative to path) are synced.
+  # Good for project repos where you only want the docs/ subtree.
+  - name: project2-docs
+    path: ~/project2
+    category: Projects
+    scan: docs
+    docs_path: docs/
+    ai_summary: true
+    # ai_ignore: per-source glob patterns excluded from AI summarization
+    # (D-74) — matching files still sync normally, they just never get a
+    # summary callout or get sent to the AI backend.
+    ai_ignore:
+      - "internal/**"
+    # labels: cross-source tags used to build _index/<Label>.md pages
+    # (Phase 2) that link every file tagged with that label across sources.
+    labels:
+      - runbook
+
+# Global ignore patterns applied to all sources.
+# Pattern formats supported by shouldIgnore:
+#   - "dirname/"       → matches the named directory anywhere in the path
+#   - "*.ext"          → matches files with the given extension
+#   - "exact-name.md"  → exact filename or path segment match
+ignore:
+  - ".git/"
+  - "node_modules/"
+  - "vendor/"
+  - ".DS_Store"
+
+# Optional: path to the audit log file.
+# Defaults to ~/.obsync/audit.log if not set.
+# audit_log: ~/.obsync/audit.log
