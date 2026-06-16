@@ -37,11 +37,10 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm pack
-      # GATE: npm publish is intentionally disabled until Phase 12
-      # (Public Launch) — package has no LICENSE yet. Add the NPM_TOKEN
-      # repository secret in Phase 12 to activate this step.
+      # GATE: npm publish disabled pending npm scope decision (deferred to next milestone).
+      # To activate: decide publish scope (scoped vs unscoped), set NPM_TOKEN secret, change if: false.
       - name: Publish to npm
-        if: ${{ secrets.NPM_TOKEN != '' }}
+        if: false
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
